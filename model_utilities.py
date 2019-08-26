@@ -8,11 +8,12 @@ Description: Class for
 
 
 def modelParse(filename):
-    """Parses the standard mplus model into single lines.
+    """Parses the standard mplus model into single lines. Model refers to the
+    concept defined after the model: keyword in mplus.
 
-    Each line is translated into a lines with only one dependency. It looks for
-    the line containing "model:" and start parsing there until the next empty
-    line.
+    Each line of the model is translated into a lines with only one dependency.
+    It looks for the line containing "model:" and start parsing there until the
+    next empty line.
 
     Parameters
     ----------
@@ -22,9 +23,11 @@ def modelParse(filename):
     Returns
     -------
     new_lines : list of strings representing a single line of the model
+    j : the line number where the model stopped
 
     """
 
+    key_words = ['on', 'with']
     found_model = False
 
     with open(filename) as fp:
@@ -51,17 +54,23 @@ def modelParse(filename):
 
                 split_line = line.split(" ")
 
-                if ("on" in line and len(split_line) > 3):
-                    index = split_line.index('on')
+                if (("on" in line or "with" in line) and len(split_line) > 3):
+                    if ("on" in line):
+                        key_word = "on"
+                    else:
+                        key_word = "with"
+
+                    index = split_line.index(key_word)
+
                     if index == 1:
                         r_list = split_line[2:]
                         for i in range(len(r_list)):
-                            line = "{} on {}".format(split_line[0], r_list[i])
+                            line = "{} {} {}".format(split_line[0], key_word, r_list[i])
                             new_lines.append(line)
                     else:
                         l_list = split_line[:index]
                         for i in range(len(l_list)):
-                            line = "{} on {}".format(l_list[i], split_line[-1])
+                            line = "{} {} {}".format(l_list[i], key_word, split_line[-1])
                             new_lines.append(line)
                 else:
                     new_lines.append(line)
@@ -90,6 +99,8 @@ def appendToFile(filename, model):
                 f.write(line + " (" + model.labels[i] + ");\n")
             else:
                 f.write(line + ";\n")
+
+        f.write("\n")
 
 
 def combineModels(model1, model2, label, same_indices):

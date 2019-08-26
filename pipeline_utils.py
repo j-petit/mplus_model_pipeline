@@ -25,23 +25,33 @@ def createDiffs(model1, model2, filename):
         raise Exception("Models not the same")
 
     no_lines = len(model1.model)
-
-    lines = []
-    start_line = "new(diff0-diff{});".format(no_lines - 1)
+    not_diffs = 0
 
     for i in range(no_lines):
+        if model1.labels[i] == model2.labels[i]:
+            not_diffs = not_diffs + 1
 
-        line = "diff{0} = {1} - {2};".format(i, model1.labels[i],
-                                             model2.labels[i])
+    lines = []
+
+    start_line = "new(diff0-diff{});".format(no_lines - not_diffs - 1)
+
+    counter = 0
+    for i in range(no_lines):
 
         if model1.labels[i] == model2.labels[i]:
+            line = "diffX = {1} - {2};".format(i, model1.labels[i],
+                                             model2.labels[i])
             line = "! " + line
+        else:
+            line = "diff{0} = {1} - {2};".format(counter, model1.labels[i],
+                                             model2.labels[i])
+            counter = counter + 1
 
         lines.append(line)
 
     with open(filename, 'a') as f:
 
-        f.write("MODEL CONSTRAINT\n")
+        f.write("MODEL CONSTRAINT:\n")
         f.write(start_line + "\n")
 
         for line in lines:
