@@ -80,7 +80,13 @@ def filterDiffs(threshold, filename, var_name):
         for line in fp:
             line = line.strip(None)
 
-            if re.match(to_match, line):
+            if (line == "New/Additional Parameters"):
+                found = True
+
+            if (line == ""):
+                found = False
+
+            if (re.match(to_match, line) and found):
                 value = float(line.split()[4])
 
                 if value < threshold:
